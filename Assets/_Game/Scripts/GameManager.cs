@@ -28,6 +28,12 @@ public class GameManager : MonoBehaviour
     private float _multiplier = 1f; // Multiplicador de clics, empieza en 1 (sin bonus)
 
     [SerializeField]
+    private double _clickMultiplierCost = 1.15d, _idleMultiplierCost = 1.15d; // Costo del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden ajustar para hacer el juego más o menos difícil.
+
+    [SerializeField]
+    private int _clickMultiplierLevel = 0, _idleMultiplierLevel = 0; // Nivel actual del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden usar para mostrar el nivel en la UI o para calcular el costo de los upgrades.
+    
+    [SerializeField]
     private bool _isEnabledIdleMultiplier; //Verifica si el upgrade de multiplicador de energía pasiva está habilitado o no
 
     [SerializeField]
@@ -66,7 +72,75 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetFloat("PlayerEnergy", _energy); // Guardamos el valor de energía en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
     }
+    
+    public double ClickMultiplierCost
+    {
+        get { return _clickMultiplierCost; }
+        set
+        {
+            if (value < 0)
+            {
+                _clickMultiplierCost = 0;
+            }
+            else
+            {
+                _clickMultiplierCost = value;
+            }
+            PlayerPrefs.SetString("ClickMultiplierCost", _clickMultiplierCost.ToString()); // Guardamos el valor del costo del upgrade de multiplicador de clics en PlayerPrefs cada vez que se actualiza, para persistencia.
+        }
+    }
 
+    public double IdleMultiplierCost
+    {
+        get { return _idleMultiplierCost; }
+        set
+        {
+            if (value < 0)
+            {
+                _idleMultiplierCost = 0;
+            }
+            else
+            {
+                _idleMultiplierCost = value;
+            }
+            PlayerPrefs.SetString("IdleMultiplierCost", _idleMultiplierCost.ToString()); // Guardamos el valor del costo del upgrade de multiplicador de energía pasiva en PlayerPrefs cada vez que se actualiza, para persistencia.
+        }
+    }
+
+    public int ClickMultiplierLevel
+    {
+        get { return _clickMultiplierLevel; }
+        set
+        {
+            if (value < 0)
+            {
+                _clickMultiplierLevel = 0;
+            }
+            else
+            {
+                _clickMultiplierLevel = value;
+            }
+            PlayerPrefs.SetInt("ClickMultiplierLevel", _clickMultiplierLevel); // Guardamos el valor del nivel del upgrade de multiplicador de clics en PlayerPrefs cada vez que se actualiza, para persistencia.
+        }
+    }
+
+    public int IdleMultiplierLevel
+    {
+        get { return _idleMultiplierLevel; }
+        set
+        {
+            if (value < 0)
+            {
+                _idleMultiplierLevel = 0;
+            }
+            else
+            {
+                _idleMultiplierLevel = value;
+            }
+            PlayerPrefs.SetInt("IdleMultiplierLevel", _idleMultiplierLevel); // Guardamos el valor del nivel del upgrade de multiplicador de energía pasiva en PlayerPrefs cada vez que se actualiza, para persistencia.
+        }
+    }
+    
     // 5. MÉTODOS (Las acciones que puede realizar la clase/ la logic de negocio)
 
     // Metodo que cambia la energía del jugador. 
@@ -92,13 +166,15 @@ public class GameManager : MonoBehaviour
 
     // Metodo para aplicar el upgrade de multiplicador de clics. Recibe el monto a agregar al multiplicador y el costo del upgrade.
     // Devuelve un booleano para indicar si el upgrade se aplicó correctamente (true) o no (false, por falta de energía).
-    public bool AddMultiplier(float amountToAdd, float amountToCharge)
+    public bool AddMultiplier(float amountToAdd)
     {
-        if (_energy >= amountToCharge)
+        if (_energy >= ClickMultiplierCost)
         {
-            _energy -= amountToCharge;
+            Energy -= (float)ClickMultiplierCost;
             _multiplier *= amountToAdd;
-
+            ClickMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
+            _clickMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de clics para mostrarlo en la UI o para calcular el costo de los upgrades.
+            
             // Después de modificar la energía, también debemos notificar a los oyentes del cambio, 
             // ya que la energía se ha reducido debido al costo del upgrade.
             // El "?" asegura que solo se intente invocar el evento si hay oyentes suscritos, evitando errores si no hay ninguno.
@@ -112,14 +188,16 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField] float _idleEnergyMultiplierAmount = 1f; // El monto a agregar al multiplicador de energía pasiva (idle energy) por cada upgrade comprado.
-    public bool AddIdleMutliplier(float amountToAdd, float amountToCharge)
+    public bool AddIdleMutliplier(float amountToAdd)
     {
         // Este método es similar a AddMultiplier, pero se utiliza para aplicar el upgrade de multiplicador de energía pasiva (idle energy).
         // Se verifica si el jugador tiene suficiente energía para pagar el costo del upgrade.
-        if (_energy >= amountToCharge)
+        if (_energy >= IdleMultiplierCost)
         {
             // Si hay suficiente energía, se resta el costo del upgrade de la energía actual.
-            _energy -= amountToCharge;
+            _energy -= (float)IdleMultiplierCost;
+            IdleMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
+            _idleMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de energía pasiva para mostrarlo en la UI o para calcular el costo de los upgrades.
 
             if (!_isEnabledIdleMultiplier)
             {

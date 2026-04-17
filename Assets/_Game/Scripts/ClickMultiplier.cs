@@ -5,7 +5,6 @@ using UnityEngine;
 public class ClickMultiplier : MonoBehaviour, IUpgrade
 {   
     [field: SerializeField] public string Name {get; private set;}
-    [field: SerializeField] public float Cost {get; private set;}
     [field: SerializeField] public string Description {get; private set;}
 
     [SerializeField] private float _multiplierAmount; // El factor por el cual se multiplicarán los clics
@@ -15,12 +14,11 @@ public class ClickMultiplier : MonoBehaviour, IUpgrade
     {
         // Metodo para aplicar el upgrade de multiplicador de clics
         // para aumentar el multiplicador de clics en el juego.
-        bool upgradeApplied = GameManager.Instance.AddMultiplier(_multiplierAmount, Cost);
+        bool upgradeApplied = GameManager.Instance.AddMultiplier(_multiplierAmount);
 
         if(upgradeApplied)
         {
-            Cost *= 1.15f; // Aumentamos el costo del upgrade para la siguiente compra
-            _buttonTextCost.text = "Upgrade: " + CostAmountFormatter(Cost); // Actualizamos el texto del botón con el nuevo costo formateado
+            _buttonTextCost.text = "Upgrade: " + CostAmountFormatter(GameManager.Instance.ClickMultiplierCost); // Actualizamos el texto del botón con el nuevo costo formateado
             Debug.Log("Click Multiplier Upgrade Applied!");
         }
         else
@@ -31,7 +29,7 @@ public class ClickMultiplier : MonoBehaviour, IUpgrade
 
     void Start()
     {
-        _buttonTextCost.text = "Upgrade: " + Cost;
+        _buttonTextCost.text = "Upgrade: " + GameManager.Instance.ClickMultiplierCost.ToString(); // Inicializamos el texto del botón con el costo formateado al iniciar.
     }
 
     // Método para formatear el costo del upgrade, similar al formateo de energía en el UIManager, pero adaptado para costos.
