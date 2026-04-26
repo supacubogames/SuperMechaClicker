@@ -17,6 +17,17 @@ public class GameManager : MonoBehaviour
 
         // Carga el valor de energía guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
         Energy = PlayerPrefs.GetFloat("PlayerEnergy", 0f); 
+        ClickMultiplierCost = double.Parse(PlayerPrefs.GetString("ClickMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 1.15 si no hay ninguno guardado.
+        IdleMultiplierCost = double.Parse(PlayerPrefs.GetString("IdleMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de energía pasiva guardado
+        ClickMultiplierLevel = PlayerPrefs.GetInt("ClickMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
+        IdleMultiplierLevel = PlayerPrefs.GetInt("IdleMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de energía pasiva guardado en PlayerPrefs al
+    
+        if(IdleMultiplierLevel > 0)
+        {
+            _isEnabledIdleMultiplier = true; // Si el nivel del upgrade de multiplicador de energía pasiva es mayor a 0, habilitamos el multiplicador de energía pasiva.
+            _idleEnergyMultiplierAmount = Mathf.Pow(2f, IdleMultiplierLevel - 1); // Calculamos el monto a agregar al multiplicador de energía pasiva según el nivel del upgrade. Cada nivel duplica el monto del upgrade anterior (1, 2, 4, 8, etc.).
+            StartCoroutine(IdleEnergyCoroutine()); // Iniciamos la corrutina de energía pasiva para que comience a agregar energía cada segundo.
+        }
     }
 
     // 2. CAMPOS (Variables y propiedades)
@@ -168,12 +179,12 @@ public class GameManager : MonoBehaviour
     // Devuelve un booleano para indicar si el upgrade se aplicó correctamente (true) o no (false, por falta de energía).
     public bool AddMultiplier(float amountToAdd)
     {
-        if (_energy >= ClickMultiplierCost)
+        if (Energy >= ClickMultiplierCost)
         {
             Energy -= (float)ClickMultiplierCost;
             _multiplier *= amountToAdd;
             ClickMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
-            _clickMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de clics para mostrarlo en la UI o para calcular el costo de los upgrades.
+            ClickMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de clics para mostrarlo en la UI o para calcular el costo de los upgrades.
             
             // Después de modificar la energía, también debemos notificar a los oyentes del cambio, 
             // ya que la energía se ha reducido debido al costo del upgrade.
@@ -192,12 +203,12 @@ public class GameManager : MonoBehaviour
     {
         // Este método es similar a AddMultiplier, pero se utiliza para aplicar el upgrade de multiplicador de energía pasiva (idle energy).
         // Se verifica si el jugador tiene suficiente energía para pagar el costo del upgrade.
-        if (_energy >= IdleMultiplierCost)
+        if (Energy >= IdleMultiplierCost)
         {
             // Si hay suficiente energía, se resta el costo del upgrade de la energía actual.
-            _energy -= (float)IdleMultiplierCost;
+            Energy -= (float)IdleMultiplierCost;
             IdleMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
-            _idleMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de energía pasiva para mostrarlo en la UI o para calcular el costo de los upgrades.
+            IdleMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de energía pasiva para mostrarlo en la UI o para calcular el costo de los upgrades.
 
             if (!_isEnabledIdleMultiplier)
             {
