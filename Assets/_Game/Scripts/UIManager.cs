@@ -60,55 +60,74 @@ public class UIManager : MonoBehaviour
 
     //Metodo para formatear la cantidad de energía en un formato más legible, utilizando sufijos para grandes números (K para miles, M para millones, etc.).
     public string EnergyAmountFormatter(double energy)
-    {
-        if(energy >= 1000000000000000000000000000000000000000000d)
+    {      
+        if(energy >= 1e51d)
         {
-            return (energy / 1000000000000000000000000000000000000000000000d).ToString("F2") + "Vg";
+            return (energy / 1e51).ToString("F2") + "Sxd";
+        }        
+        else if(energy >= 1e48d)
+        {
+            return (energy / 1e48).ToString("F2") + "Qid";
+        }        
+        else if(energy >= 1e45d)
+        {
+            return (energy / 1e45).ToString("F2") + "Qu";
         }
-        else if(energy >= 1000000000000000000000000000000000000f)
+        else if(energy >= 1e42d)
         {
-            return (energy / 1000000000000000000000000000000000000f).ToString("F2") + "U";
+            return (energy / 1e42).ToString("F2") + "Tr";
         }
-        else if(energy >= 1000000000000000000000000000000f)
+        else if(energy >= 1e39d)
         {
-            return (energy / 1000000000000000000000000000000f).ToString("F2") + "No";
+            return (energy / 1e39).ToString("F2") + "Du";
+        }
+        else if(energy >= 1e36d)
+        {
+            return (energy / 1e36).ToString("F2") + "U";
+        }
+        else if(energy >= 1e33d)
+        {
+            return (energy / 1e33).ToString("F2") + "D";
+        }
+        else if(energy >= 1e30d)
+        {
+            return (energy / 1e30).ToString("F2") + "No";
         }  
-        else if(energy >= 1000000000000000000000000000f)
+        else if(energy >= 1e27d)
         {
-            return (energy / 1000000000000000000000000000f).ToString("F2") + "Oc";
+            return (energy / 1e27).ToString("F2") + "Oc";
         }
-        else if(energy >= 1000000000000000000000000f)
+        else if(energy >= 1e24d)
         {
-            return (energy / 1000000000000000000000000f).ToString("F2") + "Sp";
+            return (energy / 1e24).ToString("F2") + "Sp";
         }
-        else if(energy >= 1000000000000000000000f)
+        else if(energy >= 1e21d)
         {
-            return (energy / 1000000000000000000000f).ToString("F2") + "Sx";
+            return (energy / 1e21).ToString("F2") + "Sx";
         }   
-        else if(energy >= 1000000000000000000f)
+        else if(energy >= 1e18d)
         {
-            return (energy / 1000000000000000000f).ToString("F2") + "Qi";
+            return (energy / 1e18).ToString("F2") + "Qi";
         }
-
-        else if(energy >= 1000000000000000f)
+        else if(energy >= 1e15d)
         {
-            return (energy / 1000000000000000f).ToString("F2") + "Qa";
+            return (energy / 1e15).ToString("F2") + "Qa";
         }
-        else if(energy >= 1000000000000f)
+        else if(energy >= 1e12d)
         {
-            return (energy / 1000000000000f).ToString("F2") + "T";
+            return (energy / 1e12).ToString("F2") + "T";
         }
-        else if(energy >= 1000000000f)
+        else if(energy >= 1e9d)
         {
-            return (energy / 1000000000f).ToString("F2") + "B";
+            return (energy / 1e9).ToString("F2") + "B";
         }
-        else if(energy >= 1000000f)
+        else if(energy >= 1e6d)
         {
-            return (energy / 1000000f).ToString("F2") + "M";
+            return (energy / 1e6).ToString("F2") + "M";
         }
-        else if(energy >= 1000f)
+        else if(energy >= 1e3d)
         {
-            return (energy / 1000f).ToString("F2") + "K";
+            return (energy / 1e3).ToString("F2") + "K";
         }
         else
         {

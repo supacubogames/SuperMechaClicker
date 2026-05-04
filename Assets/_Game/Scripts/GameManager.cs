@@ -11,21 +11,24 @@ public class GameManager : MonoBehaviour
     // Método Awake se llama cuando la instancia del script se carga
     private void Awake()
     {
+        //PlayerPrefs.DeleteAll(); // BORRAR ESTA LINEA DESPUES DE PRUEBAS: Esta línea borra todos los datos guardados en PlayerPrefs, lo cual es útil para pruebas pero debe ser eliminada en la versión final del juego para no borrar el progreso de los jugadores.
         // Si no hay una instancia de la clase, asigna esta instancia. Si ya existe una, destruye el objeto duplicado.
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
         // Carga el valor de energía guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
-        Energy = PlayerPrefs.GetFloat("PlayerEnergy", 0f); 
+        Energy = double.Parse(PlayerPrefs.GetString("PlayerEnergy", "0")); 
         ClickMultiplierCost = double.Parse(PlayerPrefs.GetString("ClickMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 1.15 si no hay ninguno guardado.
         IdleMultiplierCost = double.Parse(PlayerPrefs.GetString("IdleMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de energía pasiva guardado
         ClickMultiplierLevel = PlayerPrefs.GetInt("ClickMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
-        IdleMultiplierLevel = PlayerPrefs.GetInt("IdleMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de energía pasiva guardado en PlayerPrefs al
+        IdleMultiplierLevel = PlayerPrefs.GetInt("IdleMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de energía pasiva guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
+        CurrentMechaPartIndex = PlayerPrefs.GetInt("CurrentMechaPartIndex", 0); // Carga el valor del índice de la parte del mecha actual guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
     
+        // Si el nivel del upgrade de multiplicador de energía pasiva es mayor a 0, habilitamos el multiplicador de energía pasiva y calculamos el monto a agregar al multiplicador según el nivel del upgrade.
         if(IdleMultiplierLevel > 0)
         {
             _isEnabledIdleMultiplier = true; // Si el nivel del upgrade de multiplicador de energía pasiva es mayor a 0, habilitamos el multiplicador de energía pasiva.
-            _idleEnergyMultiplierAmount = Mathf.Pow(2f, IdleMultiplierLevel - 1); // Calculamos el monto a agregar al multiplicador de energía pasiva según el nivel del upgrade. Cada nivel duplica el monto del upgrade anterior (1, 2, 4, 8, etc.).
+            _idleEnergyMultiplierAmount = Math.Pow(2.0, IdleMultiplierLevel - 1); // Calculamos el monto a agregar al multiplicador de energía pasiva según el nivel del upgrade. Cada nivel duplica el monto del upgrade anterior (1, 2, 4, 8, etc.).
             StartCoroutine(IdleEnergyCoroutine()); // Iniciamos la corrutina de energía pasiva para que comience a agregar energía cada segundo.
         }
     }
@@ -33,10 +36,10 @@ public class GameManager : MonoBehaviour
     // 2. CAMPOS (Variables y propiedades)
     [SerializeField]
     // Variable privada para almacenar la energía del jugador
-    private float _energy;
+    private double _energy;
 
     [SerializeField]
-    private float _multiplier = 1f; // Multiplicador de clics, empieza en 1 (sin bonus)
+    private double _multiplier = 1.0; // Multiplicador de clics, empieza en 1 (sin bonus)
 
     [SerializeField]
     private double _clickMultiplierCost = 1.15d, _idleMultiplierCost = 1.15d; // Costo del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden ajustar para hacer el juego más o menos difícil.
@@ -56,8 +59,13 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Transform _cubeTransform; // Referencia al transform del cubo para posicionar el texto flotante sobre el cubo
 
+    [SerializeField]
+    private MechaPartData[] mechaParts; // Array para almacenar los datos de las partes del mecha, que se pueden asignar desde el inspector. Esto es útil para mostrar las partes del mecha en la UI o para usarlas en la lógica del juego.
     // 3. EVENTOS (Las señales de radio que otras clases pueden escuchar)
 
+    [SerializeField]
+    private int _currentMechaPartIndex = 0; // Índice para llevar un seguimiento de la parte del mecha actual. Esto se puede usar para mostrar la parte del mecha correspondiente en la UI o para cambiar la parte del mecha que se muestra.
+    
     // Evento que se dispara cuando la energía cambia. Esto permite que otras clases se enteren de los cambios en la energía.
     // En particular, este evento espera un metodo que reciba un float como parametro, que representará 
     // el nuevo valor de la energía después del cambio.
@@ -65,7 +73,7 @@ public class GameManager : MonoBehaviour
 
     // 4. PROPIEDADES (Los guardias de las variables)
     // Propiedad para acceder y modificar la energía
-    public float Energy
+    public double Energy
     {
         // El getter devuelve el valor actual de la energía, mientras que el setter permite modificar la energía pero
         // con una protección para evitar valores negativos.
@@ -80,7 +88,7 @@ public class GameManager : MonoBehaviour
             {
                 _energy = value;
             }
-            PlayerPrefs.SetFloat("PlayerEnergy", _energy); // Guardamos el valor de energía en PlayerPrefs cada vez que se actualiza, para persistencia.
+            PlayerPrefs.SetString("PlayerEnergy", _energy.ToString()); // Guardamos el valor de energía en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
     }
     
@@ -151,12 +159,29 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("IdleMultiplierLevel", _idleMultiplierLevel); // Guardamos el valor del nivel del upgrade de multiplicador de energía pasiva en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
     }
+
+    public int CurrentMechaPartIndex
+    {
+        get { return _currentMechaPartIndex; }
+        set
+        {
+            if (value < 0)
+            {
+                _currentMechaPartIndex = 0;
+            }
+            else
+            {
+                _currentMechaPartIndex = value;
+            }
+            PlayerPrefs.SetInt("CurrentMechaPartIndex", _currentMechaPartIndex); // Guardamos el valor del índice de la parte del mecha actual en PlayerPrefs cada vez que se actualiza, para persistencia.
+        }
+    }
     
     // 5. MÉTODOS (Las acciones que puede realizar la clase/ la logic de negocio)
 
     // Metodo que cambia la energía del jugador. 
     // El metodo cumple con la firma del evento, ya que recibe un float (el nuevo valor de energía) y no devuelve nada (void).
-    public void AddEnergy(float amount)
+    public void AddEnergy(double amount)
     {
         // A. Modificamos el valor (usando la Property para que proteja de negativos)
         Energy += amount * _multiplier;
@@ -177,11 +202,11 @@ public class GameManager : MonoBehaviour
 
     // Metodo para aplicar el upgrade de multiplicador de clics. Recibe el monto a agregar al multiplicador y el costo del upgrade.
     // Devuelve un booleano para indicar si el upgrade se aplicó correctamente (true) o no (false, por falta de energía).
-    public bool AddMultiplier(float amountToAdd)
+    public bool AddMultiplier(double amountToAdd)
     {
         if (Energy >= ClickMultiplierCost)
         {
-            Energy -= (float)ClickMultiplierCost;
+            Energy -= ClickMultiplierCost;
             _multiplier *= amountToAdd;
             ClickMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
             ClickMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de clics para mostrarlo en la UI o para calcular el costo de los upgrades.
@@ -198,15 +223,15 @@ public class GameManager : MonoBehaviour
         return false;
     }
 
-    [SerializeField] float _idleEnergyMultiplierAmount = 1f; // El monto a agregar al multiplicador de energía pasiva (idle energy) por cada upgrade comprado.
-    public bool AddIdleMutliplier(float amountToAdd)
+    [SerializeField] double _idleEnergyMultiplierAmount = 1.0; // El monto a agregar al multiplicador de energía pasiva (idle energy) por cada upgrade comprado.
+    public bool AddIdleMutliplier(double amountToAdd)
     {
         // Este método es similar a AddMultiplier, pero se utiliza para aplicar el upgrade de multiplicador de energía pasiva (idle energy).
         // Se verifica si el jugador tiene suficiente energía para pagar el costo del upgrade.
         if (Energy >= IdleMultiplierCost)
         {
             // Si hay suficiente energía, se resta el costo del upgrade de la energía actual.
-            Energy -= (float)IdleMultiplierCost;
+            Energy -= IdleMultiplierCost;
             IdleMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
             IdleMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de energía pasiva para mostrarlo en la UI o para calcular el costo de los upgrades.
 
@@ -221,7 +246,7 @@ public class GameManager : MonoBehaviour
             else
             {
                 // Si el upgrade de multiplicador de energía pasiva ya está habilitado, simplemente aumentamos el monto a agregar al multiplicador.
-                _idleEnergyMultiplierAmount *= 2f;
+                _idleEnergyMultiplierAmount *= 2.0;
             }
 
             // Después de modificar la energía, también debemos notificar a los oyentes del cambio, 
@@ -241,8 +266,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void BuyMechaPart()
+    {
+        if(CurrentMechaPartIndex >= mechaParts.Length)
+        {
+            Debug.Log("Juego terminado, Felicidades!");
+            return;
+        }
+
+        if(_energy >= mechaParts[CurrentMechaPartIndex].cost)
+        {
+            Energy -= mechaParts[CurrentMechaPartIndex].cost;
+            OnEnergyChanged?.Invoke(Energy); // Notificamos a los oyentes del cambio de energía después de comprar la parte del mecha.
+            CurrentMechaPartIndex++; // Avanzamos al siguiente índice para la próxima parte del mecha.
+        }
+    }
+
     // Método para mostrar el texto flotante de energía para ser llamado desde el AddEnergy y desde la corrutina de energía pasiva (idle energy).
-    private void ShowFloatingText(float amount)
+    private void ShowFloatingText(double amount)
     {
         // Convierte la posición del cubo en el mundo a una posición en la pantalla (coordenadas de píxeles) para colocar el texto flotante correctamente.
         var cubePos = Camera.main.WorldToScreenPoint(_cubeTransform.position);
