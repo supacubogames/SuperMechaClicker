@@ -1,16 +1,18 @@
 using System;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MechaPartButton : MonoBehaviour
 {
     [SerializeField] private int _partIndex;
     [SerializeField] private MechaPartData _partData;
-    [SerializeField] private TMPro.TMP_Text _buttonText;
+    [SerializeField] private TextMeshProUGUI _buttonText;
 
     private void OnEnable()
     {
-        Debug.Log("OnEnable de MechaPartButton ejecutado");
+
 
     }
 
@@ -44,20 +46,24 @@ public class MechaPartButton : MonoBehaviour
         {
             // Parte ya equipada
             _buttonText.text = _partData.partName + "\nComprado";
-            GetComponent<UnityEngine.UI.Image>().color = Color.green;
+            _buttonText.color = Color.black;
+            GetComponent<UnityEngine.UI.Image>().color = Color.lightGreen;
+
             gameObject.GetComponent<UnityEngine.UI.Button>().interactable = false; // Desactivamos el botón para que no se pueda interactuar con él, ya que la parte ya está equipada.
         }
         else if (_partIndex == GameManager.Instance.CurrentMechaPartIndex)
         {
             // Parte actual
             _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost) + " Credits";
-            GetComponent<UnityEngine.UI.Image>().color = Color.white;
+            //_buttonText.color = Color.green;
+            //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }
         else
         {
             // Parte bloqueada
             _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost) + " Credits";
-            GetComponent<UnityEngine.UI.Image>().color = Color.gray;
+            //_buttonText.color = Color.red;
+            //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }
     }
 }
