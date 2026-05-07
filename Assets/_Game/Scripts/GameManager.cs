@@ -11,21 +11,21 @@ public class GameManager : MonoBehaviour
     // Método Awake se llama cuando la instancia del script se carga
     private void Awake()
     {
-        //PlayerPrefs.DeleteAll(); // BORRAR ESTA LINEA DESPUES DE PRUEBAS: Esta línea borra todos los datos guardados en PlayerPrefs, lo cual es útil para pruebas pero debe ser eliminada en la versión final del juego para no borrar el progreso de los jugadores.
+        PlayerPrefs.DeleteAll(); // BORRAR ESTA LINEA DESPUES DE PRUEBAS: Esta línea borra todos los datos guardados en PlayerPrefs, lo cual es útil para pruebas pero debe ser eliminada en la versión final del juego para no borrar el progreso de los jugadores.
         // Si no hay una instancia de la clase, asigna esta instancia. Si ya existe una, destruye el objeto duplicado.
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
 
         // Carga el valor de energía guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
-        Energy = double.Parse(PlayerPrefs.GetString("PlayerEnergy", "0")); 
-        ClickMultiplierCost = double.Parse(PlayerPrefs.GetString("ClickMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 1.15 si no hay ninguno guardado.
-        IdleMultiplierCost = double.Parse(PlayerPrefs.GetString("IdleMultiplierCost", "1.15")); // Carga el valor del costo del upgrade de multiplicador de energía pasiva guardado
+        Energy = double.Parse(PlayerPrefs.GetString("PlayerEnergy", "0"));
+        ClickMultiplierCost = double.Parse(PlayerPrefs.GetString("ClickMultiplierCost", "50")); // Carga el valor del costo del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 50 si no hay ninguno guardado.
+        IdleMultiplierCost = double.Parse(PlayerPrefs.GetString("IdleMultiplierCost", "100")); // Carga el valor del costo del upgrade de multiplicador de energía pasiva guardado
         ClickMultiplierLevel = PlayerPrefs.GetInt("ClickMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de clics guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
         IdleMultiplierLevel = PlayerPrefs.GetInt("IdleMultiplierLevel", 0); // Carga el valor del nivel del upgrade de multiplicador de energía pasiva guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
         CurrentMechaPartIndex = PlayerPrefs.GetInt("CurrentMechaPartIndex", 0); // Carga el valor del índice de la parte del mecha actual guardado en PlayerPrefs al iniciar el juego, con un valor por defecto de 0 si no hay ninguno guardado.
-    
+
         // Si el nivel del upgrade de multiplicador de energía pasiva es mayor a 0, habilitamos el multiplicador de energía pasiva y calculamos el monto a agregar al multiplicador según el nivel del upgrade.
-        if(IdleMultiplierLevel > 0)
+        if (IdleMultiplierLevel > 0)
         {
             _isEnabledIdleMultiplier = true; // Si el nivel del upgrade de multiplicador de energía pasiva es mayor a 0, habilitamos el multiplicador de energía pasiva.
             _idleEnergyMultiplierAmount = Math.Pow(2.0, IdleMultiplierLevel - 1); // Calculamos el monto a agregar al multiplicador de energía pasiva según el nivel del upgrade. Cada nivel duplica el monto del upgrade anterior (1, 2, 4, 8, etc.).
@@ -42,11 +42,14 @@ public class GameManager : MonoBehaviour
     private double _multiplier = 1.0; // Multiplicador de clics, empieza en 1 (sin bonus)
 
     [SerializeField]
-    private double _clickMultiplierCost = 1.15d, _idleMultiplierCost = 1.15d; // Costo del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden ajustar para hacer el juego más o menos difícil.
+    private double _clickMultiplierCost, _idleMultiplierCost; // Costo del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden ajustar para hacer el juego más o menos difícil.
+
+    [SerializeField]
+    private double _clickMultiplierCostFactor, _idleMultiplierCostFactor; // Factor por el cual se multiplicará el costo de los upgrades cada vez que se compren, para hacer que los upgrades sean progresivamente más caros.
 
     [SerializeField]
     private int _clickMultiplierLevel = 0, _idleMultiplierLevel = 0; // Nivel actual del upgrade de multiplicador de clics y energía pasiva, respectivamente. Se pueden usar para mostrar el nivel en la UI o para calcular el costo de los upgrades.
-    
+
     [SerializeField]
     private bool _isEnabledIdleMultiplier; //Verifica si el upgrade de multiplicador de energía pasiva está habilitado o no
 
@@ -61,15 +64,19 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     private MechaPartData[] mechaParts; // Array para almacenar los datos de las partes del mecha, que se pueden asignar desde el inspector. Esto es útil para mostrar las partes del mecha en la UI o para usarlas en la lógica del juego.
-    // 3. EVENTOS (Las señales de radio que otras clases pueden escuchar)
 
     [SerializeField]
     private int _currentMechaPartIndex = 0; // Índice para llevar un seguimiento de la parte del mecha actual. Esto se puede usar para mostrar la parte del mecha correspondiente en la UI o para cambiar la parte del mecha que se muestra.
-    
+
+    // 3. EVENTOS (Las señales de radio que otras clases pueden escuchar)
+
     // Evento que se dispara cuando la energía cambia. Esto permite que otras clases se enteren de los cambios en la energía.
     // En particular, este evento espera un metodo que reciba un float como parametro, que representará 
     // el nuevo valor de la energía después del cambio.
     public event Action<double> OnEnergyChanged;
+
+    // Evento que se dispara cuando se compra una parte del mecha. Esto permite que otras clases se enteren de las compras de partes del mecha.
+    public event Action OnMechaPartBought;
 
     // 4. PROPIEDADES (Los guardias de las variables)
     // Propiedad para acceder y modificar la energía
@@ -91,7 +98,7 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetString("PlayerEnergy", _energy.ToString()); // Guardamos el valor de energía en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
     }
-    
+
     public double ClickMultiplierCost
     {
         get { return _clickMultiplierCost; }
@@ -176,7 +183,7 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("CurrentMechaPartIndex", _currentMechaPartIndex); // Guardamos el valor del índice de la parte del mecha actual en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
     }
-    
+
     // 5. MÉTODOS (Las acciones que puede realizar la clase/ la logic de negocio)
 
     // Metodo que cambia la energía del jugador. 
@@ -197,7 +204,7 @@ public class GameManager : MonoBehaviour
         ShowFloatingText(amount * _multiplier); // Llamamos al método para mostrar el texto flotante cada vez que se agrega energía (ya sea por clics o por energía pasiva).
 
         // C. (Opcional) Un log para nosotros mismos
-        Debug.Log($"[GameManager] Energía actual: {Energy}");
+        //Debug.Log($"[GameManager] Energía actual: {Energy}");
     }
 
     // Metodo para aplicar el upgrade de multiplicador de clics. Recibe el monto a agregar al multiplicador y el costo del upgrade.
@@ -208,9 +215,9 @@ public class GameManager : MonoBehaviour
         {
             Energy -= ClickMultiplierCost;
             _multiplier *= amountToAdd;
-            ClickMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
+            ClickMultiplierCost *= _clickMultiplierCostFactor; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
             ClickMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de clics para mostrarlo en la UI o para calcular el costo de los upgrades.
-            
+
             // Después de modificar la energía, también debemos notificar a los oyentes del cambio, 
             // ya que la energía se ha reducido debido al costo del upgrade.
             // El "?" asegura que solo se intente invocar el evento si hay oyentes suscritos, evitando errores si no hay ninguno.
@@ -232,7 +239,7 @@ public class GameManager : MonoBehaviour
         {
             // Si hay suficiente energía, se resta el costo del upgrade de la energía actual.
             Energy -= IdleMultiplierCost;
-            IdleMultiplierCost *= 1.15d; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
+            IdleMultiplierCost *= _idleMultiplierCostFactor; // Aumentamos el costo del upgrade para la siguiente compra, multiplicándolo por 1.15 (puedes ajustar este valor para hacer el juego más o menos difícil).
             IdleMultiplierLevel++; // Aumentamos el nivel del upgrade de multiplicador de energía pasiva para mostrarlo en la UI o para calcular el costo de los upgrades.
 
             if (!_isEnabledIdleMultiplier)
@@ -266,19 +273,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // Metodo para comprar la parte del mecha actual. Verifica si el jugador tiene suficiente energía para comprar la parte del mecha, 
+    // y si es así, resta el costo de la energía, avanza al siguiente índice de parte del mecha y notifica a los oyentes del cambio de energía.
     public void BuyMechaPart()
     {
-        if(CurrentMechaPartIndex >= mechaParts.Length)
+        // Primero verificamos si el índice de la parte del mecha actual es mayor o igual al número total de partes del mecha disponibles, 
+        // para evitar errores de índice fuera de rango y para saber si el jugador ya ha comprado todas las partes del mecha.
+        if (CurrentMechaPartIndex >= mechaParts.Length)
         {
-            Debug.Log("Juego terminado, Felicidades!");
+            // El return aquí es importante para asegurarnos de que el método se detenga y no intente acceder a una parte del mecha 
+            // que no existe, lo cual causaría un error.
             return;
         }
 
-        if(_energy >= mechaParts[CurrentMechaPartIndex].cost)
+        // Si el jugador no ha comprado todas las partes del mecha, verificamos si tiene suficiente energía 
+        // para comprar la parte del mecha actual.
+        if (_energy >= mechaParts[CurrentMechaPartIndex].cost)
         {
-            Energy -= mechaParts[CurrentMechaPartIndex].cost;
-            OnEnergyChanged?.Invoke(Energy); // Notificamos a los oyentes del cambio de energía después de comprar la parte del mecha.
+            Energy -= mechaParts[CurrentMechaPartIndex].cost; // Si el jugador tiene suficiente energía, se resta el costo de la parte del mecha de la energía actual.
+            OnEnergyChanged?.Invoke(Energy); // Notificamos a los oyentes del cambio de energía después de comprar la parte del mecha. El "?" asegura que solo se intente invocar el evento si hay oyentes suscritos, evitando errores si no hay ninguno.
             CurrentMechaPartIndex++; // Avanzamos al siguiente índice para la próxima parte del mecha.
+            OnMechaPartBought?.Invoke(); // Notificamos a los oyentes que se ha comprado una parte del mecha, para que puedan actualizar la UI o realizar otras acciones relacionadas con la compra de partes del mecha.
+        }
+
+        if (CurrentMechaPartIndex >= mechaParts.Length)
+        {
+            // Si el jugador ya ha comprado todas las partes del mecha, mostramos un mensaje de felicitaciones y terminamos el método 
+            // sin hacer nada más.
+            Debug.Log("Juego terminado, Felicidades!");
+            // El return aquí es importante para asegurarnos de que el método se detenga y no intente acceder a una parte del mecha 
+            // que no existe, lo cual causaría un error.
         }
     }
 
