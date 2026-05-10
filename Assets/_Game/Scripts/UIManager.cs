@@ -55,7 +55,7 @@ public class UIManager : MonoBehaviour
     private void UpdateEnergyUI(double currentEnergy)
     {
         //Aqui se actualiza el texto en la UI. El formato "F0" redondea el número a 0 decimales.
-        _energyText.text = "<sprite index=0> " + EnergyAmountFormatter(currentEnergy);
+        _energyText.text = EnergyAmountFormatter(currentEnergy);
     }
 
     //Metodo para formatear la cantidad de energía en un formato más legible, utilizando sufijos para grandes números (K para miles, M para millones, etc.).

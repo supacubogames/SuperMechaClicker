@@ -71,13 +71,13 @@ MonoBehaviour:
 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7cc6cd4ef18604358a4dc403d694b835, type: 2}
-  m_sharedMaterial: {fileID: -1558021827757756845, guid: 537d9d927ee214a308c6e4af8e8a3bd4, type: 2}
+  m_sharedMaterial: {fileID: 2664764689695348951, guid: 7cc6cd4ef18604358a4dc403d694b835, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4283233280
   m_fontColor: {r: 1, g: 0.54901963, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -137,7 +137,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &-2923578822949503825

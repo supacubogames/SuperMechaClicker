@@ -36,7 +36,7 @@ public class MechaPartButton : MonoBehaviour
         {
             Debug.LogWarning("GameManager.Instance es null en MechaPartButton. No se pudo suscribir al evento OnMechaPartBought.");
         }
-        _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost) + " Credits";
+        _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost);
         UpdateVisualState();
     }
 
@@ -54,14 +54,14 @@ public class MechaPartButton : MonoBehaviour
         else if (_partIndex == GameManager.Instance.CurrentMechaPartIndex)
         {
             // Parte actual
-            _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost) + " Credits";
+            _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost);
             //_buttonText.color = Color.green;
             //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }
         else
         {
             // Parte bloqueada
-            _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost) + " Credits";
+            _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost);
             //_buttonText.color = Color.red;
             //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }
