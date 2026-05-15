@@ -50,11 +50,13 @@ public class MechaPartButton : MonoBehaviour
             GetComponent<UnityEngine.UI.Image>().color = Color.lightGreen;
 
             gameObject.GetComponent<UnityEngine.UI.Button>().interactable = false; // Desactivamos el botón para que no se pueda interactuar con él, ya que la parte ya está equipada.
+      
         }
         else if (_partIndex == GameManager.Instance.CurrentMechaPartIndex)
         {
             // Parte actual
             _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost);
+            gameObject.GetComponent<UnityEngine.UI.Button>().interactable = true; // Activamos el botón para que se pueda interactuar con él, ya que es la parte actual y se puede comprar.
             //_buttonText.color = Color.green;
             //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }
@@ -62,6 +64,8 @@ public class MechaPartButton : MonoBehaviour
         {
             // Parte bloqueada
             _buttonText.text = _partData.partName + "\n" + UIManager.Instance.EnergyAmountFormatter(_partData.cost);
+            gameObject.GetComponent<UnityEngine.UI.Button>().interactable = false; // Desactivamos el botón para que no se pueda interactuar con él, ya que la parte ya está equipada.
+
             //_buttonText.color = Color.red;
             //GetComponent<UnityEngine.UI.Image>().color = Color.black;
         }

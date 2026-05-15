@@ -70,14 +70,14 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 7cc6cd4ef18604358a4dc403d694b835, type: 2}
-  m_sharedMaterial: {fileID: 2664764689695348951, guid: 7cc6cd4ef18604358a4dc403d694b835, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 808665032f38b43b7a57f849585ac7ef, type: 2}
+  m_sharedMaterial: {fileID: 187736282441001820, guid: 808665032f38b43b7a57f849585ac7ef, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4283233280
+    rgba: 4278226175
   m_fontColor: {r: 1, g: 0.54901963, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3

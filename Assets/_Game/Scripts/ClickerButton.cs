@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ClickerButton : MonoBehaviour
@@ -25,7 +26,19 @@ public class ClickerButton : MonoBehaviour
     void OnMouseUp()
     {
         // Volvemos a la escala original del botón cuando se suelta el mouse.
-        gameObject.transform.localScale = new Vector3(2f, 2f);
+        //gameObject.transform.localScale = new Vector3(2f, 2f);
+        StartCoroutine(ButtonAnimation());
+    }
+
+    IEnumerator ButtonAnimation()
+    {
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 25; // Ajusta la velocidad de la animación aquí
+        gameObject.transform.localScale = Vector3.Lerp(gameObject.transform.localScale, new Vector3(2f, 2f), t);
+        yield return null;
+        }
     }
 
 }
