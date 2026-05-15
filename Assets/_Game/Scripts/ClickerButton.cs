@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class ClickerButton : MonoBehaviour
 {
+    [SerializeField] private ParticleSystem _sparks;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -21,6 +22,7 @@ public class ClickerButton : MonoBehaviour
 
         // Cambiamos la escala del botón para dar una sensación de "presionado".
         gameObject.transform.localScale = new Vector3(3f, 3f);
+        _sparks.Play();
     }
 
     void OnMouseUp()
