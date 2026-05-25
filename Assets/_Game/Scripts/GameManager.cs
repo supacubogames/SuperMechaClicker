@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -11,7 +10,7 @@ public class GameManager : MonoBehaviour
     // Método Awake se llama cuando la instancia del script se carga
     private void Awake()
     {
-        PlayerPrefs.DeleteAll(); // BORRAR ESTA LINEA DESPUES DE PRUEBAS: Esta línea borra todos los datos guardados en PlayerPrefs, lo cual es útil para pruebas pero debe ser eliminada en la versión final del juego para no borrar el progreso de los jugadores.
+        //PlayerPrefs.DeleteAll(); // BORRAR ESTA LINEA DESPUES DE PRUEBAS: Esta línea borra todos los datos guardados en PlayerPrefs, lo cual es útil para pruebas pero debe ser eliminada en la versión final del juego para no borrar el progreso de los jugadores.
         // Si no hay una instancia de la clase, asigna esta instancia. Si ya existe una, destruye el objeto duplicado.
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
@@ -314,6 +313,9 @@ public class GameManager : MonoBehaviour
             victoryPanel.gameObject.SetActive(true); // Activamos el panel de victoria para mostrarlo al jugador.
 
             _isGameFinished = true; // Marcamos el juego como terminado.
+            PlayerPrefs.DeleteAll(); // Limpiamos los datos guardados en PlayerPrefs para que el jugador pueda empezar de nuevo si quiere jugar otra vez después de ganar.
+
+            ShowVictoryPanel(); // Llamamos al método para mostrar el panel de victoria con el efecto de fade-in.
 
             // El return aquí es importante para asegurarnos de que el método se detenga y no intente acceder a una parte del mecha 
             // que no existe, lo cual causaría un error.
@@ -334,6 +336,53 @@ public class GameManager : MonoBehaviour
 
         // Llama al método SetText del script FloatingText para establecer el texto que mostrará el monto de energía ganada.
         floatingText.GetComponent<FloatingText>().SetText("+" + UIManager.Instance.EnergyAmountFormatter(amount));
+    }
+
+    // Este método arranca la corrutina. Lo llamas UNA vez cuando el juego termina.
+    public void ShowVictoryPanel()
+    {
+        StartCoroutine(FadeInPanel());
+    }
+
+    // La corrutina: hace el fade poquito a poquito, frame por frame.
+    IEnumerator FadeInPanel()
+    {
+        // Agarramos el componente Image del panel para poder tocarle el color
+        var panelImage = victoryPanel.GetComponent<UnityEngine.UI.Image>();
+
+        var panelText = victoryPanel.GetComponentsInChildren<UnityEngine.UI.Graphic>();
+
+        // El color actual del panel (negro con alpha en 0 = invisible)
+        Color color = panelImage.color;
+
+        // Mientras el alpha sea menor que nuestro objetivo (0.86 = 220/255)...
+        while (color.a < 0.9f)
+        {
+            // ...le sumamos un poquito al alpha cada frame.
+            // Time.deltaTime hace que suba suavecito, no de golpe.
+            color.a += Time.deltaTime * 0.5f; // el 0.5 es la velocidad del fade
+
+            // Le devolvemos el color modificado al panel
+            panelImage.color = color;
+
+            // Bajamos el volumen del BGM al mismo ritmo
+            AudioManager.Instance.GetBGMAudioSource().volume -= Time.deltaTime * 0.15f;
+
+            foreach(var text in panelText)
+            {
+                Color textColor = text.color;
+                textColor.a += Time.deltaTime * 0.5f;
+                text.color = textColor;
+            }
+
+            // "yield return null" = pausar aquí, esperar al siguiente frame, 
+            // y volver a entrar al while desde arriba.
+            // SIN ESTO, el while se ejecuta completo en UN frame = no hay animación.
+            yield return null;
+        }
+
+        // Cuando sale del while, el fade terminó. 
+        // Aquí podrías activar el texto de victoria, por ejemplo.
     }
 
     private IEnumerator IdleEnergyCoroutine()

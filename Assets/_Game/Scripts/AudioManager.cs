@@ -5,7 +5,9 @@ public class AudioManager : MonoBehaviour
     // Singleton instance
     public static AudioManager Instance;
     [SerializeField] private AudioClip _clickSFX; // Referencia al AudioClip para el sonido de clic
-    [SerializeField] private AudioSource _audioSource; // Referencia al AudioSource para reproducir los sonidos
+    [SerializeField] private AudioSource _audioSourceBGM; // Referencia al AudioSource para reproducir la música de fondo
+    [SerializeField] private AudioSource _audioSourceSFX; // Referencia al AudioSource para reproducir los sonidos
+    [SerializeField] private AudioClip _BGM; // Referencia al AudioClip para la música de fondo
 
     void Awake()
     {
@@ -23,10 +25,33 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        foreach(var button in FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None))
+        {
+            button.onClick.AddListener(() => PlayClickSFX());
+        }
+
+        PlayBGM(); // Llama al método para reproducir la música de fondo al iniciar el juego.
+    }
+
     public void PlayClickSFX()
     {
         // Reproduce el sonido de clic utilizando el AudioSource del objeto al que está adjunto este script.
         // El método PlayOneShot reproduce un clip de audio sin interrumpir el audio que ya se esté reproduciendo.
-        _audioSource.PlayOneShot(_clickSFX);
+        _audioSourceSFX.PlayOneShot(_clickSFX);
     }
+
+    public void PlayBGM()
+    {
+        _audioSourceBGM.clip = _BGM; // Asigna el clip de música de fondo al AudioSource.
+        _audioSourceBGM.loop = true; // Configura el AudioSource para que la música de fondo se repita en loop.
+        _audioSourceBGM.Play(); // Reproduce la música de fondo.
+    }
+
+    public AudioSource GetBGMAudioSource()
+    {
+        return _audioSourceBGM; // Devuelve la referencia al AudioSource que reproduce la música de fondo.
+    }
+
 }
