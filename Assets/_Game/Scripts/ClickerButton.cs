@@ -18,11 +18,14 @@ public class ClickerButton : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (GameManager.Instance.IsGameFinished) return; // Si el juego ha terminado, no hacemos nada.
+        
         GameManager.Instance.AddEnergy(1);
 
         // Cambiamos la escala del botón para dar una sensación de "presionado".
         gameObject.transform.localScale = new Vector3(3f, 3f);
-        _sparks.Play();
+        _sparks.Play(); 
+        AudioManager.Instance.PlayClickSFX();
     }
 
     void OnMouseUp()

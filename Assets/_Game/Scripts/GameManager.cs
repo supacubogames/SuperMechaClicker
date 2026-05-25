@@ -68,6 +68,11 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private int _currentMechaPartIndex = 0; // Índice para llevar un seguimiento de la parte del mecha actual. Esto se puede usar para mostrar la parte del mecha correspondiente en la UI o para cambiar la parte del mecha que se muestra.
 
+    [SerializeField]
+    private Transform victoryPanel; // Referencia al panel de victoria para mostrarlo cuando el jugador compre todas las partes del mecha.
+
+    private bool _isGameFinished = false; // Variable para verificar si el juego ha terminado, para evitar que se sigan comprando partes del mecha o mostrando el panel de victoria después de que el jugador haya ganado.
+
     // 3. EVENTOS (Las señales de radio que otras clases pueden escuchar)
 
     // Evento que se dispara cuando la energía cambia. Esto permite que otras clases se enteren de los cambios en la energía.
@@ -182,6 +187,12 @@ public class GameManager : MonoBehaviour
             }
             PlayerPrefs.SetInt("CurrentMechaPartIndex", _currentMechaPartIndex); // Guardamos el valor del índice de la parte del mecha actual en PlayerPrefs cada vez que se actualiza, para persistencia.
         }
+    }
+
+    public bool IsGameFinished
+    {
+        get { return _isGameFinished; }
+        set { _isGameFinished = value; }
     }
 
     // 5. MÉTODOS (Las acciones que puede realizar la clase/ la logic de negocio)
@@ -300,7 +311,10 @@ public class GameManager : MonoBehaviour
         {
             // Si el jugador ya ha comprado todas las partes del mecha, mostramos un mensaje de felicitaciones y terminamos el método 
             // sin hacer nada más.
-            Debug.Log("Juego terminado, Felicidades!");
+            victoryPanel.gameObject.SetActive(true); // Activamos el panel de victoria para mostrarlo al jugador.
+
+            _isGameFinished = true; // Marcamos el juego como terminado.
+
             // El return aquí es importante para asegurarnos de que el método se detenga y no intente acceder a una parte del mecha 
             // que no existe, lo cual causaría un error.
         }
@@ -324,7 +338,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator IdleEnergyCoroutine()
     {
-        while (_isEnabledIdleMultiplier)
+        while (_isEnabledIdleMultiplier && !_isGameFinished) // La corrutina seguirá ejecutándose mientras el upgrade de multiplicador de energía pasiva esté habilitado y el juego no haya terminado.
         {
             yield return new WaitForSeconds(1f); // Espera 1 segundo
             Energy += _idleEnergyMultiplierAmount; // Agrega 1 de energía cada segundo
